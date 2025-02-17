@@ -459,17 +459,17 @@ export default function Home() {
         <div className="size-selection">
           <label htmlFor="size">Select Size:</label>
           <select id="size" value={selectedSize} onChange={handleSizeChange}>
-            <option value="100x100">100" x 100"</option>
-            <option value="50x50">50" x 50"</option>
-            <option value="30x40">30" x 40"</option>
-            <option value="24x30">24" x 30"</option>
-            <option value="20x20">20" x 20"</option>
-            <option value="18x24">18" x 24"</option>
-            <option value="16x20">16" x 20"</option>
-            <option value="12x16">12" x 16"</option>
-            <option value="11x14">11" x 14"</option>
-            <option value="8x10">8" x 10"</option>
-            <option value="5x7">5" x 7"</option>
+            <option value="100x100">100&quot; x 100&quot;</option>
+            <option value="50x50">50&quot; x 50&quot;</option>
+            <option value="30x40">30&quot; x 40&quot;</option>
+            <option value="24x30">24&quot; x 30&quot;</option>
+            <option value="20x20">20&quot; x 20&quot;</option>
+            <option value="18x24">18&quot; x 24&quot;</option>
+            <option value="16x20">16&quot; x 20&quot;</option>
+            <option value="12x16">12&quot; x 16&quot;</option>
+            <option value="11x14">11&quot; x 14&quot;</option>
+            <option value="8x10">8&quot; x 10&quot;</option>
+            <option value="5x7">5&quot; x 7&quot;</option>
           </select>
           <input
             type="text"
@@ -596,11 +596,10 @@ function getTargetDimensions(size: string, orientation: string): [number, number
   return [w, h];
 }
 
-function debounce(func: Function, wait: number) {
+function debounce<T extends (...args: any[]) => void>(func: T, wait: number): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout;
-  return function (...args: any[]) {
-    const context = this;
+  return function (...args: Parameters<T>) {
     clearTimeout(timeout);
-    timeout = setTimeout(() => func.apply(context, args), wait);
+    timeout = setTimeout(() => func(...args), wait);
   };
 }
