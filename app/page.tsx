@@ -2,6 +2,7 @@
 
 import NextImage from "next/image";
 import { useState, useEffect } from "react";
+import Image from 'next/image';
 
 export default function Home() {
   const [selectedSize, setSelectedSize] = useState("30x40");
@@ -34,10 +35,6 @@ export default function Home() {
 
   const handleCustomSizeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setCustomSize(event.target.value);
-  };
-
-  const handleOrientationChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setOrientation(event.target.value);
   };
 
   const handlePreprocessingChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -108,13 +105,6 @@ export default function Home() {
     }
 
     setCorkCount(usage);
-  };
-
-  const quantizeGray = (value: number, steps: number): number => {
-    if (steps >= 256) return value;
-    const divisions = steps - 1;
-    const chunk = 255 / divisions;
-    return Math.round(value / chunk) * chunk;
   };
 
   const getDimensions = (size: string): [number, number] => {
@@ -194,26 +184,12 @@ export default function Home() {
     }
   };
 
-  function latestOnlyProcess(file: File) {
-    // Clear any scheduled calls
-    if (debounceTimeout) {
-      clearTimeout(debounceTimeout);
-    }
-
-    // Schedule the idea of "this is the last call"
-    debounceTimeout = setTimeout(() => {
-      // Now that we've waited 300ms without interruption, run the worker
-      const taskId = ++currentTaskId;
-      processImageWithWorker(file);
-    }, WAIT_TIME);
-  }
-
   const processImageWithWorker = (file: File) => {
     const taskId = ++currentTaskId; // Increment task ID for each new task
     const reader = new FileReader();
     reader.onload = (e) => {
       if (!e.target?.result) return;
-      const img = new Image();
+      const img = new window.Image(); // Use window.Image to ensure it's the native constructor
       img.src = e.target.result as string;
       img.onload = () => {
         if (taskId !== currentTaskId) return; // Ignore if not the latest task
@@ -351,11 +327,13 @@ export default function Home() {
             <div className="mt-4">
               <h3>Original Image with Crop Area</h3>
               <div className="relative inline-block">
-                <img
+                <NextImage
                   src={originalImage}
                   alt="Original"
-                  className="max-w-full"
-                  style={{ objectFit: "contain", display: "block", width: "600px" }}
+                  layout="responsive"
+                  width={600}
+                  height={400}
+                  objectFit="contain"
                 />
                 <CropOverlay
                   selectedSize={selectedSize}
@@ -433,11 +411,13 @@ export default function Home() {
                 </button>
               </h3>
               {isPreprocessedImageVisible && (
-                <img
+                <NextImage
                   src={preprocessedImage}
                   alt="Preprocessed"
-                  className="max-w-full"
-                  style={{ objectFit: "contain", display: "block", width: "600px", margin: 0, padding: 0, height: "auto" }}
+                  layout="responsive"
+                  width={600}
+                  height={400}
+                  objectFit="contain"
                 />
               )}
             </div>
@@ -446,11 +426,13 @@ export default function Home() {
           {processedImage && (
             <div className="mt-4">
               <h3>Paint by Numbers Mosaic</h3>
-              <img
+              <NextImage
                 src={processedImage}
                 alt="Processed"
-                className="max-w-full max-h-[600px] w-[90vw]"
-                style={{ objectFit: "contain" }}
+                layout="responsive"
+                width={600}
+                height={400}
+                objectFit="contain"
               />
             </div>
           )}
@@ -596,7 +578,7 @@ function getTargetDimensions(size: string, orientation: string): [number, number
   return [w, h];
 }
 
-function debounce<T extends (...args: any[]) => void>(func: T, wait: number): (...args: Parameters<T>) => void {
+function debounce<T extends (...args: unknown[]) => void>(func: T, wait: number): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout;
   return function (...args: Parameters<T>) {
     clearTimeout(timeout);
