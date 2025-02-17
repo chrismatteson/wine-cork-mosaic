@@ -2,7 +2,6 @@
 
 import NextImage from "next/image";
 import { useState, useEffect } from "react";
-import Image from 'next/image';
 
 export default function Home() {
   const [selectedSize, setSelectedSize] = useState("30x40");
@@ -20,14 +19,17 @@ export default function Home() {
   const [isPreprocessedImageVisible, setIsPreprocessedImageVisible] = useState(false);
 
   let currentTaskId = 0;
-  let debounceTimeout: NodeJS.Timeout | null = null;
-  const WAIT_TIME = 300;
+
+  // Debounced version of processImageWithWorker
+  const debouncedProcessImageWithWorker = debounce((file: File) => {
+    processImageWithWorker(file);
+  }, 300); // Adjust the delay to 300ms for a smoother experience
 
   useEffect(() => {
     if (uploadedImage) {
       debouncedProcessImageWithWorker(uploadedImage);
     }
-  }, [selectedSize, customSize, orientation, cropPosition, cropSize, preprocessingLevel]);
+  }, [selectedSize, customSize, orientation, cropPosition, cropSize, preprocessingLevel, debouncedProcessImageWithWorker, uploadedImage]);
 
   const handleSizeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedSize(event.target.value);
@@ -282,11 +284,6 @@ export default function Home() {
     };
     reader.readAsDataURL(file);
   };
-
-  // Debounced version of processImageWithWorker
-  const debouncedProcessImageWithWorker = debounce((file: File) => {
-    processImageWithWorker(file);
-  }, 300); // Adjust the delay to 300ms for a smoother experience
 
   return (
     <div className="grid min-h-screen grid-rows-[20px_1fr_20px] p-8 pb-20 gap-16 sm:p-20">
@@ -578,7 +575,7 @@ function getTargetDimensions(size: string, orientation: string): [number, number
   return [w, h];
 }
 
-function debounce<T extends (...args: unknown[]) => void>(func: T, wait: number): (...args: Parameters<T>) => void {
+function debounce<T extends (...args: any[]) => void>(func: T, wait: number): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout;
   return function (...args: Parameters<T>) {
     clearTimeout(timeout);
